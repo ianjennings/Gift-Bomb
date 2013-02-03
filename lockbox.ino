@@ -4,43 +4,70 @@
 #define TIME_HEADER  'T'   // Header tag for serial time sync message
 #define TIME_REQUEST  7    // ASCII bell character requests a time sync message 
 
-int difference = 0;
+int daysLeft = 0;
+int numToLight = 0;
+
+int ledPins[] = {
+  2,3,4,5,6,7,8,9};
 
 // T1262347200  //noon Jan 1 2010
 
 void setup()  {
   Serial.begin(9600);
+  for(int i = 0; i <= 7; i++){         //this is a loop and will repeat eight times
+    pinMode(ledPins[i],OUTPUT); //we use this to set each LED pin to output
+  }     
 }
 
-void loop(){    
+void loop(){       
+
+  // valentines - todays day
+  daysLeft = day(1360872000) - day();
+
+  numToLight = 7 - daysLeft;
+  
+  Serial.println("days");
+  Serial.println(daysLeft);
+  
+  Serial.println("tolight");
+  Serial.println(numToLight);
+  
+  delay(1000);
+
+  for(int i = 0; i < numToLight; i++){
+    digitalWrite(ledPins[i], HIGH);  //Turns on LED #i each time this runs i
+  }
+  
+  if(!daysLeft){
+  
+    while(true){
+      for(int i = 0; i < numToLight; i++){
+        digitalWrite(ledPins[i], HIGH);  //Turns on LED #i each time this runs i
+      }
+      delay(80);  
+      for(int i = 0; i < numToLight; i++){
+        digitalWrite(ledPins[i], LOW);  //Turns on LED #i each time this runs i
+      }   
+      delay(100); 
+      for(int i = 0; i < numToLight; i++){
+        digitalWrite(ledPins[i], HIGH);  //Turns on LED #i each time this runs i
+      }
+      delay(80);  
+      for(int i = 0; i < numToLight; i++){
+        digitalWrite(ledPins[i], LOW);  //Turns on LED #i each time this runs i
+      }   
+      delay(3000); 
+
+    }
+    
+  }
+
   if(Serial.available() ) 
   {
     processSyncMessage();
   }
   if(timeStatus() == timeNotSet) 
     Serial.println("waiting for sync message");
-  else     
-      digitalClockDisplay();  
-  delay(1000);
-}
-
-void digitalClockDisplay(){
-  // digital clock display of the time
-  Serial.print(hour());
-  printDigits(minute());
-  printDigits(second());
-  Serial.print(" ");
-  Serial.print(day());
-  Serial.print(" ");
-  Serial.print(month());
-  Serial.print(" ");
-  Serial.print(year()); 
-  Serial.println(); 
-  
-  difference = day(1360872000) - day();
-  
-  Serial.print(difference);
-  Serial.println();
 }
 
 void printDigits(int digits){
@@ -53,7 +80,7 @@ void printDigits(int digits){
 
 void processSyncMessage() {
   // if time sync available from serial port, update time and return true
-  while(Serial.available() >=  TIME_MSG_LEN ){  // time message consists of header & 10 ASCII digits
+  while(Serial.available() >=  TIME_MSG_LEN ){  // time message consisnuts of header & 10 ASCII digits
     char c = Serial.read() ; 
     Serial.print(c);  
     if( c == TIME_HEADER ) {       
@@ -68,3 +95,4 @@ void processSyncMessage() {
     }  
   }
 }
+
