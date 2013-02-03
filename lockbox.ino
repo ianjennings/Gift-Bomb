@@ -1,9 +1,15 @@
 #include <Time.h>  
+#include <Servo.h> 
 
 #define TIME_MSG_LEN  11   // time sync to PC is HEADER followed by Unix time_t as ten ASCII digits
 #define TIME_HEADER  'T'   // Header tag for serial time sync message
 #define TIME_REQUEST  7    // ASCII bell character requests a time sync message 
 
+int pos = 0;    // variable to store the servo position 
+
+Servo myservo;  // create servo object to control a servo 
+                // a maximum of eight servo objects can be created 
+ 
 int daysLeft = 0;
 int numToLight = 0;
 
@@ -13,6 +19,8 @@ int ledPins[] = {
 // T1262347200  //noon Jan 1 2010
 
 void setup()  {
+  myservo.attach(12);  // attaches the servo on pin 9 to the servo object 
+  myservo.write(0);
   Serial.begin(9600);
   for(int i = 0; i <= 7; i++){         //this is a loop and will repeat eight times
     pinMode(ledPins[i],OUTPUT); //we use this to set each LED pin to output
@@ -40,7 +48,10 @@ void loop(){
   
   if(!daysLeft){
   
+    myservo.write(90);
+  
     while(true){
+      
       for(int i = 0; i < numToLight; i++){
         digitalWrite(ledPins[i], HIGH);  //Turns on LED #i each time this runs i
       }
