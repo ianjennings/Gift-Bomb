@@ -13,18 +13,18 @@ Servo myservo;  // create servo object to control a servo
 int daysLeft = 0;
 int numToLight = 0;
 
-int ledPins[] = {
-  2,3,4,5,6,7,8,9};
+int ledPins[] = {2,3,4,5,6,7,8,9};
 
 // T1262347200  //noon Jan 1 2010
 
 void setup()  {
   myservo.attach(12);  // attaches the servo on pin 9 to the servo object 
-  myservo.write(0);
+  myservo.write(90);
   Serial.begin(9600);
   for(int i = 0; i <= 7; i++){         //this is a loop and will repeat eight times
     pinMode(ledPins[i],OUTPUT); //we use this to set each LED pin to output
   }     
+  pinMode(11, OUTPUT);
 }
 
 void loop(){       
@@ -46,26 +46,31 @@ void loop(){
     digitalWrite(ledPins[i], HIGH);  //Turns on LED #i each time this runs i
   }
   
-  if(!daysLeft){
+  if(daysLeft == 0){
   
     myservo.write(90);
   
-    while(true){
+    while(true){  
       
       for(int i = 0; i < numToLight; i++){
         digitalWrite(ledPins[i], HIGH);  //Turns on LED #i each time this runs i
+        digitalWrite(11, HIGH);  //Turns on LED #i each time this runs i
       }
       delay(80);  
       for(int i = 0; i < numToLight; i++){
         digitalWrite(ledPins[i], LOW);  //Turns on LED #i each time this runs i
+        digitalWrite(11, LOW);  //Turns on LED #i each time this runs i
+
       }   
       delay(100); 
       for(int i = 0; i < numToLight; i++){
         digitalWrite(ledPins[i], HIGH);  //Turns on LED #i each time this runs i
+        digitalWrite(11, HIGH);  //Turns on LED #i each time this runs i
       }
       delay(80);  
       for(int i = 0; i < numToLight; i++){
         digitalWrite(ledPins[i], LOW);  //Turns on LED #i each time this runs i
+        digitalWrite(11, LOW);  //Turns on LED #i each time this runs i
       }   
       delay(3000); 
 
