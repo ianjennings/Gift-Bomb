@@ -1,93 +1,134 @@
+
 #include <Time.h>  
 #include <Servo.h> 
-
+#include <EEPROM.h>
 #define TIME_MSG_LEN  11   // time sync to PC is HEADER followed by Unix time_t as ten ASCII digits
 #define TIME_HEADER  'T'   // Header tag for serial time sync message
 #define TIME_REQUEST  7    // ASCII bell character requests a time sync message 
 
 int pos = 0;    // variable to store the servo position 
 
-
 Servo myservo;  // create servo object to control a servo 
-                // a maximum of eight servo objects can be created 
- 
+// a maximum of eight servo objects can be created 
+
 int daysLeft = 0;
 int numToLight = 0;
 
-int ledPins[] = {2,3,4,5,6,7,8,9};
-
-// T1262347200  //noon Jan 1 2010
+int ledPins[] = {2,3,4,5,6,7,8};
 
 void setup()  {
-  delay(2000);
+  
+  delay(1000);
+
   myservo.attach(12);  // attaches the servo on pin 9 to the servo object 
   myservo.write(180);
   Serial.begin(9600);
   for(int i = 0; i <= 7; i++){         //this is a loop and will repeat eight times
     pinMode(ledPins[i],OUTPUT); //we use this to set each LED pin to output
   }     
+  pinMode(11, OUTPUT);
+
+  setTime(EEPROM.read(0),EEPROM.read(1),0,EEPROM.read(2),2,2013);
+  // setTime(0);
+
+  Serial.println("hour, minute, day is");
+  Serial.println(EEPROM.read(0));
+  Serial.println(EEPROM.read(1));
+  Serial.println(EEPROM.read(2));
+
 }
 
 void loop(){     
-  
+
+  EEPROM.write(0, hour());
+  EEPROM.write(1, minute());
+  EEPROM.write(2, day());
+
   for(int i = 0; i < 7; i++){
     digitalWrite(ledPins[i], LOW);  //Turns on LED #i each time this runs i
   }        
-  
+
   digitalClockDisplay();  
 
   // valentines - todays day
   daysLeft = day(1360872000) - day();
-  
+
   Serial.println("hour is ");
   Serial.println(hour());
-  
-  if(hour() > 9 && hour() < 23) {
-    numToLight = 7 - daysLeft;    
-  } else {
-    numToLight = 0;
-    Serial.println("sleep");
-    // delay(60 * 60 * 8);
-  }
-  
-  Serial.println("days");
-  Serial.println(daysLeft);
-  
-  Serial.println("tolight");
-  Serial.println(numToLight);
-  
-  for(int i = 0; i < numToLight; i++){
-    digitalWrite(ledPins[i], HIGH);  //Turns on LED #i each time this runs i
-  }
-  
-  if(daysLeft == 0){
-  
-    myservo.write(90);
-  
-    while(true){  
-      
-      for(int i = 0; i < numToLight; i++){
-        digitalWrite(ledPins[i], HIGH);  //Turns on LED #i each time this runs i
-      }
-      delay(80);  
-      for(int i = 0; i < numToLight; i++){
-        digitalWrite(ledPins[i], LOW);  //Turns on LED #i each time this runs i
-      }   
-      delay(100); 
-      for(int i = 0; i < numToLight; i++){
-        digitalWrite(ledPins[i], HIGH);  //Turns on LED #i each time this runs i
-      }
-      delay(80);  
-      for(int i = 0; i < numToLight; i++){
-        digitalWrite(ledPins[i], LOW);  //Turns on LED #i each time this runs i
-      }   
-      delay(3000); 
 
+  if(hour() >= 9 && hour() < 23) {
+    numToLight = 8 - daysLeft;   
+
+    if(daysLeft == 1) {
+
+      digitalWrite(ledPins[0], HIGH);  //Turns on LED #i each time this runs i
+      digitalWrite(ledPins[6], HIGH);  //Turns on LED #i each time this runs i
+      delay(1000);
+      digitalWrite(ledPins[1], HIGH);  //Turns on LED #i each time this runs i
+      digitalWrite(ledPins[5], HIGH);  //Turns on LED #i each time this runs i
+      delay(1000);
+      digitalWrite(ledPins[2], HIGH);  //Turns on LED #i each time this runs i
+      digitalWrite(ledPins[4], HIGH);  //Turns on LED #i each time this runs i
+      delay(1000);
+      digitalWrite(ledPins[3], HIGH);  //Turns on LED #i each time this runs i
+      delay(1000);
+      for(int i = 0; i < 7; i++){
+        digitalWrite(ledPins[i], LOW);  //Turns on LED #i each time this runs i
+        digitalWrite(11, LOW);
+      }   
+      delay(1000);
+
+    } 
+    else if(daysLeft == 0){
+
+      myservo.write(90);
+
+      while(true){  
+
+        for(int i = 0; i < 7; i++){
+          digitalWrite(ledPins[i], HIGH);  //Turns on LED #i each time this runs i
+          digitalWrite(11, HIGH);
+        }
+        delay(80);  
+        for(int i = 0; i < 7; i++){
+          digitalWrite(ledPins[i], LOW);  //Turns on LED #i each time this runs i
+          digitalWrite(11, LOW);
+        }   
+        delay(100); 
+        for(int i = 0; i < 7; i++){
+          digitalWrite(ledPins[i], HIGH);  //Turns on LED #i each time this runs i
+          digitalWrite(11, HIGH);
+        }
+        delay(80);  
+        for(int i = 0; i < 7; i++){
+          digitalWrite(ledPins[i], LOW);  //Turns on LED #i each time this runs i
+          digitalWrite(11, LOW);
+        }   
+        delay(3000); 
+
+      }
+
+    } 
+    else {
+
+      Serial.println("days");
+      Serial.println(daysLeft);
+
+      Serial.println("tolight");
+      Serial.println(numToLight);
+
+      for(int i = 0; i < numToLight; i++){
+        digitalWrite(ledPins[i], HIGH);  //Turns on LED #i each time this runs i
+      }
+
+      delay(1000);
     }
-    
+
+  } 
+  else if (year() != 1970) {
+    Serial.println("sleep!!!!!!!!!!!!!!!!!");
+    delay(5000);
   }
-  
-  delay(3000);
 
   if(Serial.available() ) 
   {
@@ -95,6 +136,8 @@ void loop(){
   }
   if(timeStatus() == timeNotSet) 
     Serial.println("waiting for sync message");
+
+  delay(1000);
 }
 
 void printDigits(int digits){
@@ -136,3 +179,4 @@ void digitalClockDisplay(){
   Serial.print(year()); 
   Serial.println(); 
 }
+
